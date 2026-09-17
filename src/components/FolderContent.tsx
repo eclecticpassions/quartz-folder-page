@@ -42,6 +42,28 @@ function concatenateResources(
   return result.length === 0 ? undefined : result;
 }
 
+function getFrontmatter(fileData: unknown): Record<string, unknown> {
+  if (!fileData || typeof fileData !== "object") return {};
+  const data = fileData as Record<string, unknown>;
+
+  if (data.frontmatter && typeof data.frontmatter === "object") {
+    return data.frontmatter as Record<string, unknown>;
+  }
+
+  if (data.data && typeof data.data === "object") {
+    const inner = data.data as Record<string, unknown>;
+    if (inner.frontmatter && typeof inner.frontmatter === "object") {
+      return inner.frontmatter as Record<string, unknown>;
+    }
+  }
+
+  return {};
+}
+
+function isFolderIndexSlug(slug: string): boolean {
+  return slug.endsWith("/index") || slug === "index";
+}
+
 function pagesFromTrie(folder: TrieNode, showSubfolders: boolean): PageEntry[] {
   return folder.children
     .map((node) => {
@@ -58,6 +80,7 @@ function pagesFromTrie(folder: TrieNode, showSubfolders: boolean): PageEntry[] {
           frontmatter: { title: node.displayName, tags: [] },
         };
       }
+
       return undefined;
     })
     .filter((page): page is PageEntry => page !== undefined);
@@ -153,36 +176,48 @@ export default ((opts?: Partial<FolderContentOptions>) => {
   const FolderContent: QuartzComponent = (props: QuartzComponentProps) => {
     const { tree, fileData, allFiles, cfg } = props;
     const ctx = props.ctx as { trie?: TrieNode } | undefined;
-    const slug = (fileData as { slug?: string } | undefined)?.slug;
 
+    const slug = (fileData as { slug?: string } | undefined)?.slug;
     if (!slug) return null;
 
+    const frontmatter = getFrontmatter(fileData);
+    const hideList = frontmatter.hideList === true;
+
     const trie = ctx?.trie;
-    let allPagesInFolder: PageEntry[];
+    let allPagesInFolder: PageEntry[] = [];
 
     if (trie) {
       const folder = trie.findNode(slug.split("/"));
-      if (!folder) return null;
-      allPagesInFolder = pagesFromTrie(folder, options.showSubfolders);
+      if (!folder && !hideList) return null;
+      allPagesInFolder = folder ? pagesFromTrie(folder, options.showSubfolders) : [];
     } else {
       allPagesInFolder = pagesFromAllFiles(allFiles ?? [], slug, options.showSubfolders);
     }
 
-    const cssClasses =
-      ((fileData as { frontmatter?: { cssclasses?: string[] } } | undefined)?.frontmatter
-        ?.cssclasses as string[] | undefined) ?? [];
+    const cssClasses = (frontmatter.cssclasses as string[] | undefined) ?? [];
     const classes = cssClasses.join(" ");
-    const listProps = {
-      ...props,
-      sort: options.sort,
-      allFiles: allPagesInFolder,
-    };
 
     const hastRoot = tree as Root;
     const content =
       hastRoot.children.length === 0
         ? (fileData as { description?: unknown } | undefined)?.description
         : htmlToJsx(hastRoot);
+
+    if (hideList) {
+      return (
+        <div class="popover-hint">
+          <article class={classes}>
+            <div class="markdown-preview-view markdown-rendered">{content}</div>
+          </article>
+        </div>
+      );
+    }
+
+    const listProps = {
+      ...props,
+      sort: options.sort,
+      allFiles: allPagesInFolder,
+    };
 
     const pageListContent = PageList(listProps) as unknown as ComponentChildren;
 

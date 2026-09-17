@@ -1,14 +1,23 @@
 {
-  "name": "@quartz-community/folder-page",
-  "version": "1.0.0",
-  "description": "Folder page type plugin for Quartz.",
+  "name": "quartz-folder-page",
+  "version": "0.1.1",
+  "description": "Fork of folder-page plugin for Quartz with custom exclusion of auto-generated page listing.",
   "type": "module",
   "license": "MIT",
-  "author": "Quartz Community",
   "homepage": "https://quartz.jzhao.xyz",
+  "author": {
+    "name": "Quartz Community",
+    "url": "https://github.com/quartz-community/folder-page"
+  },
+  "contributors": [
+    {
+      "name": "Naty S",
+      "url": "https://burgeonlab.com"
+    }
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/quartz-community/folder-page"
+    "url": "https://github.com/eclecticpassions/quartz-folder-page"
   },
   "keywords": [
     "quartz",
@@ -116,5 +125,11 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "allowScripts": {
+    "@parcel/watcher@2.6.0": true,
+    "esbuild@0.27.2": true,
+    "esbuild@0.21.5": true,
+    "fsevents@2.3.3": true
   }
 }
