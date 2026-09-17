@@ -1,6 +1,6 @@
 {
-  "name": "quartz-folder-page",
-  "version": "0.1.1",
+  "name": "@eclecticpassions/quartz-folder-page",
+  "version": "0.1.2",
   "description": "Fork of folder-page plugin for Quartz with custom exclusion of auto-generated page listing.",
   "type": "module",
   "license": "MIT",
